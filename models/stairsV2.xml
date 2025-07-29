@@ -13,5 +13,11 @@
     <body pos="-2.1 0 0.15">
       <geom name="stairs4" size="1.065 0.05" quat="1 0 0 0" type="cylinder" rgba="0.594118 0.55098 0.433333  1" contype="3" conaffinity="3"/>
     </body>
+    <body pos="0 -1 0.075">
+      <geom name="log1" size="0.075 1.05" quat="1 0 1 0" type="cylinder" rgba="0.594118 0.55098 0.433333  1" contype="3" conaffinity="3"/>
+    </body>
+    <body pos="0 1 0.075">
+      <geom name="log2" size="0.075 1.05" quat="1 0 1 0" type="cylinder" rgba="0.594118 0.55098 0.433333  1" contype="3" conaffinity="3"/>
+    </body>
   </worldbody>
 </mujoco>
