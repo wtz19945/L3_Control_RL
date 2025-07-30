@@ -14,6 +14,7 @@ import numpy as np
 from flax.training import orbax_utils
 from orbax import checkpoint as ocp
 import optax
+from pathlib import Path  # or: from epath import Path
 
 import mujoco
 import mujoco.viewer
@@ -76,7 +77,7 @@ make_networks_factory = functools.partial(
 # TODO: Make train a parameter when running the script
 train = 1
 if train == 1:  
-    num_timesteps = 100_000_000
+    num_timesteps = 200_000_000
 else:
     num_timesteps = 0
 
@@ -131,8 +132,11 @@ the_command = jp.array([x_vel, y_vel, ang_vel])
 rng = jax.random.PRNGKey(0)
 state = jit_reset(rng)
 qvel = state.pipeline_state.qvel * 0
+qpos = state.pipeline_state.qpos
+qpos = qpos.at[3:7].set(mjx_math.axis_angle_to_quat(jp.array([0, 0, 1]) , 0))
 
 state = state.tree_replace({'pipeline_state.qvel': qvel})
+state = state.tree_replace({'pipeline_state.qpos': qpos})
 state.info['command'] = the_command
 rollout = [state.pipeline_state]
 
@@ -160,10 +164,12 @@ html_string = html.render(
     colab=False,
 )
 
-html_path = os.path.join(
-    os.path.dirname(__file__),
-    "visualization/visualization_walter.html",
-)
+# html_path = os.path.join(
+#     os.path.dirname(__file__),
+#     "visualization/visualization_walter.html",
+# )
 
+html_path = Path(__file__).parent.parent / "visualization" / "visualization_walter.html"
+print(f"Saving HTML to {html_path}")
 with open(html_path, "w") as f:
     f.writelines(html_string)
