@@ -12,12 +12,13 @@
             <!-- <general biastype="affine" gainprm="1" biasprm="0 0 0 0 0 0" forcelimited="true" gear="1 0 0 0 0 0" forcerange="-20 20"/> -->
         </default>
         <default class="knee_actuator">
-            <general biastype="affine" gainprm="1" biasprm="0 0 0 0 0 0" forcelimited="true" gear="1 0 0 0 0 0" forcerange="-20 20"/>
+            <!-- <general biastype="affine" gainprm="1" biasprm="0 0 0 0 0 0" forcelimited="true" gear="1 0 0 0 0 0" forcerange="-20 20"/> -->
+            <velocity kv="2" forcelimited="true" forcerange="-20 20" />
         </default>
         <default class="wheel_actuator">
-            <!--<general gear="2" forcerange="-2.8 2.8"/>-->
             <!--<position kp="2" kv="1" forcerange="-16 16" />-->
-            <general biastype="affine" gainprm="1" biasprm="0 0 0 0 0 0" forcelimited="true" gear="1 0 0 0 0 0" forcerange="-5 5"/>
+            <!-- <general biastype="affine" gainprm="1" biasprm="0 0 0 0 0 0" forcelimited="true" gear="1 0 0 0 0 0" forcerange="-5 5"/> -->
+            <velocity kv="2" forcelimited="true" forcerange="-5 5" />
         </default>
   </default>
   
@@ -124,21 +125,21 @@
     
   <actuator>
     <position name="bl_hip" joint="torso_left_thigh_joint" class="hip_actuator"/>
-    <general name="bl_knee" joint="torso_left_thigh_shin_joint" class="knee_actuator"/>
-    <general name="bl_wheel1_joint" joint="torso_left_shin_front_wheel_joint" class="wheel_actuator"/>
-    <general name="bl_wheel2_joint" joint="torso_left_shin_rear_wheel_joint" class="wheel_actuator"/>
+    <velocity name="bl_knee" joint="torso_left_thigh_shin_joint" class="knee_actuator"/>
+    <velocity name="bl_wheel1_joint" joint="torso_left_shin_front_wheel_joint" class="wheel_actuator"/>
+    <velocity name="bl_wheel2_joint" joint="torso_left_shin_rear_wheel_joint" class="wheel_actuator"/>
     <position name="br_hip" joint="torso_right_thigh_joint" class="hip_actuator"/>
-    <general name="br_knee" joint="torso_right_thigh_shin_joint" class="knee_actuator"/>
-    <general name="br_wheel1_joint" joint="torso_right_shin_front_wheel_joint" class="wheel_actuator"/>
-    <general name="br_wheel2_joint" joint="torso_right_shin_rear_wheel_joint" class="wheel_actuator"/>
+    <velocity name="br_knee" joint="torso_right_thigh_shin_joint" class="knee_actuator"/>
+    <velocity name="br_wheel1_joint" joint="torso_right_shin_front_wheel_joint" class="wheel_actuator"/>
+    <velocity name="br_wheel2_joint" joint="torso_right_shin_rear_wheel_joint" class="wheel_actuator"/>
     <position name="fl_hip" joint="head_left_thigh_joint" class="hip_actuator"/>
-    <general name="fl_knee" joint="head_left_thigh_shin_joint" class="knee_actuator"/>
-    <general name="fl_wheel1_joint" joint="head_left_shin_front_wheel_joint" class="wheel_actuator"/>
-    <general name="fl_wheel2_joint" joint="head_left_shin_rear_wheel_joint" class="wheel_actuator"/>
+    <velocity name="fl_knee" joint="head_left_thigh_shin_joint" class="knee_actuator"/>
+    <velocity name="fl_wheel1_joint" joint="head_left_shin_front_wheel_joint" class="wheel_actuator"/>
+    <velocity name="fl_wheel2_joint" joint="head_left_shin_rear_wheel_joint" class="wheel_actuator"/>
     <position name="fr_hip" joint="head_right_thigh_joint" class="hip_actuator"/>
-    <general name="fr_knee" joint="head_right_thigh_shin_joint" class="knee_actuator"/>
-    <general name="fr_wheel1_joint" joint="head_right_shin_front_wheel_joint" class="wheel_actuator"/>
-    <general name="fr_wheel2_joint" joint="head_right_shin_rear_wheel_joint" class="wheel_actuator"/>
+    <velocity name="fr_knee" joint="head_right_thigh_shin_joint" class="knee_actuator"/>
+    <velocity name="fr_wheel1_joint" joint="head_right_shin_front_wheel_joint" class="wheel_actuator"/>
+    <velocity name="fr_wheel2_joint" joint="head_right_shin_rear_wheel_joint" class="wheel_actuator"/>
   </actuator>
   
     <keyframe>

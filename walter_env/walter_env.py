@@ -99,6 +99,7 @@ class WalterEnv(PipelineEnv):
                 action_scale: float = 0.3,
                 force_scale:  float = 20,
                 wheel_scale: float = 5,
+                vel_scale: float = 5,
                 kick_vel: float = 0.05,
                 **kwargs):
         
@@ -127,6 +128,7 @@ class WalterEnv(PipelineEnv):
         self._action_scale = action_scale
         self._force_scale = force_scale
         self._wheel_scale = wheel_scale
+        self._vel_scale = vel_scale
         self._obs_noise = obs_noise
         self._kick_vel = kick_vel
         self._soft_joint_pos_limit_factor = self.sys_config.soft_joint_pos_limit_factor
@@ -285,15 +287,15 @@ class WalterEnv(PipelineEnv):
         # TODO: Check different action type or actuation
         m_tth = self._default_pose[0:8:4] + action[0:8:4] * self._action_scale
         # m_tth = action[0:8:4] * self._force_scale
-        m_tsh = action[1:8:4] * self._force_scale
-        m_tw1 = action[2:8:4] * self._wheel_scale
-        m_tw2 = action[3:8:4] * self._wheel_scale
+        m_tsh = action[1:8:4] * self._vel_scale
+        m_tw1 = action[2:8:4] * self._vel_scale
+        m_tw2 = action[3:8:4] * self._vel_scale
         
         m_hth = self._default_pose[9::4] + action[8::4] * self._action_scale
         # m_hth = action[8::4] * self._force_scale
-        m_hsh = action[9::4] * self._force_scale
-        m_hw1 = action[10::4] * self._wheel_scale
-        m_hw2 = action[11::4] * self._wheel_scale
+        m_hsh = action[9::4] * self._vel_scale
+        m_hw1 = action[10::4] * self._vel_scale
+        m_hw2 = action[11::4] * self._vel_scale
         
         motor_targets = jnp.array([m_tth[0], m_tsh[0], m_tw1[0], m_tw2[0],
                                   m_tth[1], m_tsh[1], m_tw1[1], m_tw2[1],
