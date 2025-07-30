@@ -249,7 +249,24 @@ class WalterEnv(PipelineEnv):
 
     def step(self, state: State, action: jax.Array) -> State:
         """Steps the environment forward one timestep."""
-        rng, cmd_rng, kick_noise_2 = jax.random.split(state.info['rng'], 3)
+        rng, cmd_rng, kick_noise_2, tele_pos_key, tele_ori_key = jax.random.split(state.info['rng'], 5)
+        
+        # Teleport the robot when it successfully got over the obstacle 
+        qpos = state.pipeline_state.qpos
+        qvel = state.pipeline_state.qvel
+        out_of_bounds = jnp.linalg.norm(qpos[0:2]) > 3.0
+        
+        dxy = jax.random.uniform(tele_pos_key, (2,), minval=-0.1, maxval=0.1)
+        yaw = jax.random.uniform(tele_ori_key, (), minval=-jnp.pi, maxval=jnp.pi)
+        quat = mjx_math.axis_angle_to_quat(jnp.array([0.0, 0.0, 1.0]), yaw)
+
+        qpos = qpos.at[:2].set(jnp.where(out_of_bounds, dxy, qpos[:2]))
+        qpos = qpos.at[3:7].set(jnp.where(out_of_bounds, quat, qpos[3:7]))
+        qvel = jnp.where(out_of_bounds, jnp.zeros_like(qvel), qvel)
+        
+        pipeline_state = state.pipeline_state.replace(qpos=qpos, qvel=qvel)
+        state = state.replace(pipeline_state=pipeline_state)
+        
         # Kick the robot
         push_interval = 10
         kick_theta = jax.random.uniform(kick_noise_2, maxval = 2 * jnp.pi)
