@@ -41,12 +41,14 @@ def get_config():
                         action_rate=-0.001,
                         action = -.001,
                         termination=-1000.0,
-                        pose=-0.0,
+                        pose=-0.01,
                         shin_speed = 0.0,
                         pos_progress = 3.0,
                         stuck_vel = -3.0,
                         hip_tracking = -0.0,
                         contact = -0.01,
+                        assymetry_ang = -0.1,
+                        assymetry_vel = -0.1,
                     )
                 ),
                 # Tracking reward = exp(-error^2/sigma).
@@ -145,11 +147,11 @@ class WalterEnv(PipelineEnv):
         self._soft_uppers = c + 0.5 * r * self._soft_joint_pos_limit_factor
         
         self._weights = jnp.array([
-            1, 0, 0, 0,  # only track the thigh
-            1, 0, 0, 0,  
+            1, 1, 0, 0,  # only track thigh and shin
+            1, 1, 0, 0,  
             0,
-            1, 0, 0, 0, 
-            1, 0, 0, 0, 
+            1, 1, 0, 0, 
+            1, 1, 0, 0, 
         ])
         self._site_id_torso = sys.mj_model.site("torso_site").id
         self._site_id_head = sys.mj_model.site("head_site").id
@@ -337,6 +339,8 @@ class WalterEnv(PipelineEnv):
             'stuck_vel': self._reward_stuck_vel(state.info['step'], state.info['command'], state.info['pos_traj']),
             'hip_tracking': self._reward_hip_tracking(joint_angles),
             'contact': self._reward_stuck_contact(pipeline_state),
+            'assymetry_ang': self._reward_assymetry_ang(joint_angles),
+            'assymetry_vel': self._reward_assymetry_vel(joint_vel),
         }
 
         rewards = {
@@ -548,6 +552,18 @@ class WalterEnv(PipelineEnv):
         hip_error = jnp.sum(jnp.square(qpos[self._hip_indice] - self._default_pose[self._hip_indice]))
         return hip_error
 
+    def _reward_assymetry_ang(self, joint_angles: jax.Array,) -> jax.Array:
+        """ Penalize asymmetry of robot's shin. Shin motion better to scynchronize."""
+        shin_angle = jnp.array([joint_angles[1], joint_angles[5], joint_angles[10], joint_angles[14]])
+        reward_angle = jnp.var(jnp.cos(shin_angle)) # Use cosine to avoid wrapping angle
+        return reward_angle
+
+    def _reward_assymetry_vel(self, joint_vels: jax.Array) -> jax.Array:
+        """ Penalize asymmetry of robot's shin. Shin motion better to scynchronize."""
+        shin_vel = jnp.array([joint_vels[1], joint_vels[5], joint_vels[10], joint_vels[14]])
+        reward_vel = jnp.var(shin_vel)  # Variance of shin velocity
+        return reward_vel
+    
 envs.register_environment('Walter', WalterEnv)
 
 if __name__ == '__main__':
