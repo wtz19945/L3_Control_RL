@@ -42,9 +42,10 @@ def get_config():
                         action = -.001,
                         termination=-1000.0,
                         pose=-0.01,
+                        # TODO: check which of the remaing rewards are most effective
                         shin_speed = 0.0,
-                        pos_progress = 3.0,
-                        stuck_vel = -3.0,
+                        pos_progress = 5.0,
+                        stuck_vel = -5.0,
                         hip_tracking = -0.0,
                         contact = -0.01,
                         assymetry_ang = -0.1,
@@ -97,6 +98,7 @@ def get_config():
 class WalterEnv(PipelineEnv):
     """WALTER environment."""
     def __init__(self, 
+                # TODO: Update action scale
                 obs_noise: float = 0.05,
                 action_scale: float = 0.3,
                 force_scale:  float = 20,
@@ -139,7 +141,7 @@ class WalterEnv(PipelineEnv):
         self._default_ctrl = jnp.array(sys.mj_model.keyframe('home').ctrl)
         self._hip_indice = jnp.array([0, 4, 9, 13])  # indices of the hip joints
 
-        # Joint Limits TODO: add limits
+        # Joint Limits TODO: add actual limits
         self._lowers, self._uppers = sys.mj_model.jnt_range[1:].T
         c = (self._lowers + self._uppers) / 2
         r = self._uppers - self._lowers
@@ -254,9 +256,10 @@ class WalterEnv(PipelineEnv):
         rng, cmd_rng, kick_noise_2, tele_pos_key, tele_ori_key = jax.random.split(state.info['rng'], 5)
         
         # Teleport the robot when it successfully got over the obstacle 
+        # TODO: This reset function seem to make the climbing behavior worse
         qpos = state.pipeline_state.qpos
         qvel = state.pipeline_state.qvel
-        out_of_bounds = jnp.linalg.norm(qpos[0:2]) > 3.0
+        out_of_bounds = jnp.linalg.norm(qpos[0:2]) > 5.0
         
         dxy = jax.random.uniform(tele_pos_key, (2,), minval=-0.1, maxval=0.1)
         yaw = jax.random.uniform(tele_ori_key, (), minval=-jnp.pi, maxval=jnp.pi)
@@ -376,7 +379,7 @@ class WalterEnv(PipelineEnv):
     
     def _update_stuck_step(self, state: State, xd: Motion, cos_threshold: float = 0.8, mag_threshold: float = 0.1, reset_threshold: int = 25):
         """ Count the sim step that robot is stuck in place """
-
+        # TODO: tune the parameters
         # Get velocity direction and magnitude error
         cur_vel = xd.vel[0][:3]
         cmd_vel = state.info['command'][:3]
@@ -513,6 +516,7 @@ class WalterEnv(PipelineEnv):
     
     def _reward_stuck_vel(self, step: int, command: jax.Array, pos_traj: jax.Array) -> jax.Array:
         """The overall progress of the robot from last 15 time step along the command ."""
+        # TODO: Tune history length
         desired_distance = jnp.linalg.norm(command[:2]) * self.sys_config.ctrl_dt * 15
         displacement = pos_traj[:2] - pos_traj[-3:-1]  # [x_now - x_then, y_now - y_then]
         cmd_dir = command[:2] / (jnp.linalg.norm(command[:2]) + 1e-8)  # unit direction
@@ -526,8 +530,9 @@ class WalterEnv(PipelineEnv):
 
     def _reward_stuck_contact(self, pipeline_state: base.State) -> jax.Array:
         """Reward for smoother contact."""
-        # Possible Direction: Penalize contact forces, timing, tangential velocity
+        # TODO: Possible Direction: Penalize contact forces, timing, tangential velocity
         # Detect a stair: height reward
+        # Seperate wheel and body contact forces
         hrr_force = get_sensor_data(self._mj_model, pipeline_state, 'hrr_force')
         hrf_force = get_sensor_data(self._mj_model, pipeline_state, 'hrf_force')
         hlr_force = get_sensor_data(self._mj_model, pipeline_state, 'hlr_force')
@@ -554,12 +559,14 @@ class WalterEnv(PipelineEnv):
 
     def _reward_assymetry_ang(self, joint_angles: jax.Array,) -> jax.Array:
         """ Penalize asymmetry of robot's shin. Shin motion better to scynchronize."""
+        # TODO: avoid assymetry by using metric other than variance
         shin_angle = jnp.array([joint_angles[1], joint_angles[5], joint_angles[10], joint_angles[14]])
         reward_angle = jnp.var(jnp.cos(shin_angle)) # Use cosine to avoid wrapping angle
         return reward_angle
 
     def _reward_assymetry_vel(self, joint_vels: jax.Array) -> jax.Array:
         """ Penalize asymmetry of robot's shin. Shin motion better to scynchronize."""
+        # TODO: avoid assymetry by using metric other than variance
         shin_vel = jnp.array([joint_vels[1], joint_vels[5], joint_vels[10], joint_vels[14]])
         reward_vel = jnp.var(shin_vel)  # Variance of shin velocity
         return reward_vel
@@ -594,6 +601,7 @@ if __name__ == '__main__':
     print(state.reward)
     print(state.obs)
 
+    # TODO: this is a temporary code that only works locally
     ROOT_PATH = epath.Path('/home/orl/Tianze/mujoco_work/tools_basics/my_trial/trial7')
     filepath = os.path.join(os.path.dirname(__file__), ROOT_PATH/'scene.xml')
 
