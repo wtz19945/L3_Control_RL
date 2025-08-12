@@ -99,7 +99,7 @@ class WalterEnv(PipelineEnv):
                 action_scale: float = 0.3,
                 force_scale:  float = 20,
                 wheel_scale: float = 5,
-                vel_scale: float = 5,
+                vel_scale: float = 15,
                 kick_vel: float = 0.05,
                 **kwargs):
         
